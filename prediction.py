@@ -1,3 +1,4 @@
+import time
 import MySQLdb
 
 # Connect to database
@@ -76,4 +77,17 @@ def predictUserLoad(userID):
 	cursor.close()
 	db.commit()
 
-predictUserLoad(1000)
+while (True):
+	userIDs = []
+	cursor = db.cursor()
+	cursor.execute("SELECT UID FROM USER")
+	for row in cursor:
+		userIDs.append(row[0])
+
+	for userID in userIDs:
+		print userID
+		predictUserLoad(userID)
+		
+	cursor.close()
+	time.sleep(3600)
+
