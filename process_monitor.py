@@ -17,7 +17,7 @@ except Exception, e:
 # Global variables
 excludeUser = ['root', 'avahi', 'dbus', 'polkitd', 'rpc',  \
 			'rpcuser', 'postfix']
-excludeProcess = ['sshd', 'bash']
+excludeProcess = ['sshd', 'bash', '(sd-pam)']
 hostname = socket.gethostname()
 cursor = db.cursor()
 numOfCPU = psutil.cpu_count()
@@ -255,17 +255,19 @@ def cleanupStoreTime(pDict):
 
 # @profile
 def addServer(hostname):
-	server = 0
 	host = [hostname]
 	try:
-		server = cursor.execute("SELECT `NAME` FROM `SERVER` WHERE NAME = %s", host)
+		server = 0
+		cursor.execute("SELECT `NAME` FROM `SERVER` WHERE NAME = %s", (host, ))
+		for row in cursor:
+			server = row[0]
 	except Exception, e:
 		print "SELECT FROM `SERVER` ERROR!"
 		print e
 
 	if server == 0:
 		try:
-			cursor.execute("INSERT INTO `SERVER` (NAME) VALUES (%s)", host)
+			cursor.execute("INSERT INTO `SERVER` (NAME) VALUES (%s)", (host, ))
 		except Exception, e:
 			print "INSERT INTO `SERVER` ERROR!"
 			print e
@@ -273,7 +275,10 @@ def addServer(hostname):
 # @profile
 def addUser(real, username):
 	try:
-		user = cursor.execute("SELECT `UID` FROM `USER` WHERE `UID` = %s AND `NAME` = %s", (real, username))
+		user = 0
+		cursor.execute("SELECT `UID` FROM `USER` WHERE `UID` = %s AND `NAME` = %s", (real, username))
+		for row in cursor:
+			user = row[0]
 	except Exception, e:
 		print "SELECT `UID` ERROR!"
 		print e
@@ -293,7 +298,10 @@ def addUser(real, username):
 # @profile 
 def addJob(pid, real, timestamp, name, cmd):
 	try:
-		isRunning = cursor.execute("SELECT PID FROM JOB WHERE UID = %s AND PID = %s AND START_TIME = %s", (real, pid, timestamp))
+		isRunning = 0
+		cursor.execute("SELECT PID FROM JOB WHERE UID = %s AND PID = %s AND START_TIME = %s", (real, pid, timestamp))
+		for row in cursor:
+			isRunning = row[0]
 	except Exception, e:
 		print "SELECT PID ERROR!"
 	

@@ -54,9 +54,11 @@ def updateServer():
 	read_count, write_count = getIO()
 	ram, available, cache = getRAM()
 	
-	server = 0
 	try:
-		server = cursor.execute("SELECT NAME FROM SERVER WHERE NAME = %s", (hostname, ))
+		server = 0
+		cursor.execute("SELECT NAME FROM SERVER WHERE NAME = %s", (hostname, ))
+		for row in cursor:
+			server = row[0]
 	except Exception, e:
 		print "SELECT NAME ERROR!"
 	
@@ -65,10 +67,13 @@ def updateServer():
 			cursor.execute("INSERT INTO SERVER (NAME) VALUES (%s)", (hostname, ))
 		except Exception, e:
 			print "INSERT INTO SERVER ERROR!"
+			print repr(e)
+	print read_count, write_count
 	try:
 		cursor.execute("INSERT INTO sSAMPLE (NAME, CPU, RAM, RAM_AVAILABLE, RAM_CACHED, DISK_IN, DISK_OUT) VALUES (%s, %s, %s, %s, %s, %s, %s)", (hostname, cpu, ram, available, cache, read_count, write_count))
 	except Exception, e:
 		print "INSERT INTO sSAMPLE ERROR!"
+		print repr(e)
 	db.commit()
 
 

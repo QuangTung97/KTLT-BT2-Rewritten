@@ -4,7 +4,7 @@ import datetime
 
 # connect to database
 try:
-	db = MySQLdb.connect(host="localhost", user="ktlt", passwd="taquangtung", db="MONITOR") # , cursorclass=MySQLdb.cursors.SSCursor)
+	db = MySQLdb.connect(host="localhost", user="ktlt", passwd="taquangtung", db="MONITOR")
 except Exception, e:
 	print "Can't connect to database"
 
@@ -14,7 +14,10 @@ def bytesToMegabytes(n):
 def existingUser(userID):
 	cursor = db.cursor()
 	try:
-		userExists = cursor.execute("SELECT USER_NAME FROM PREDICTION WHERE UID = %s", (userID, ))
+		userExists = 0
+		cursor.execute("SELECT USER_NAME FROM PREDICTION WHERE UID = %s", (userID, ))
+		for row in cursor:
+			userExists = row[0]
 	except Exception, e:
 		print "existingUser"
 		print repr(e)
@@ -29,29 +32,38 @@ def existingUser(userID):
 def lastUsedServer(userID):
 	cursor = db.cursor()
 	try:
-		lastServer, lastLogin = cursor.execute("SELECT LAST_USED_SERVER, LAST_LOGIN FROM PREDICTION WHERE UID = %s", (userID, ))
+		cursor.execute("SELECT LAST_USED_SERVER, LAST_LOGIN FROM PREDICTION WHERE UID = %s", (userID, ))
+		for row in cursor:
+			lastServer, lastLogin = row
 	except Exception, e:
 		print "lastUsedServer"
 		print repr(e)
+		pass
 	cursor.close()
 
 	return lastServer, lastLogin
 
 # Find the RAM load on the server since last login
-def serverRamLoad(server, timestamp):
+def serverRAMLoad(server, timestamp):
 	cursor = db.cursor()
 	try:
-		minDiskIn, maxDiskIn = cursor.execute("SELECT MIN(DISK_IN), MAX(DISK_IN) FROM sSAMPLE WHERE NAME = %s AND TIMESTAMP > $s", (server, timestamp))
+		cursor.execute("SELECT MIN(DISK_IN), MAX(DISK_IN) FROM sSAMPLE WHERE NAME = %s AND TIMESTAMP > %s", (server, timestamp))
+		minDiskIn, maxDiskIn = 0, 0
+		for row in cursor:
+			minDiskIn, maxDiskIn = row
+		if (minDiskIn, maxDiskIn) == (None, None):
+			minDiskIn, maxDiskIn = 0, 0
+
 	except Exception, e:
 		print "serverRamLoad"
 		print repr(e)
 
-	cursor.close()
-
 	# Get the amount of cached RAM on the server
-	cursor = db.cursor()
 	try:
-		cachedRAM = cursor.excute("SELECT RAM_CACHED FROM sAMPLE WHERE NAME = %s AND DISK_IN > %s", (server, maxDiskIn))
+		cursor.execute("SELECT RAM_CACHED FROM sSAMPLE WHERE NAME = %s AND DISK_IN > %s", (server, maxDiskIn))
+		cachedRAM = 0
+		for row in cursor:
+			cachedRAM = row[0]
 	except Exception, e:
 		print "serverRamLoad 2"
 		print repr(e)
@@ -65,7 +77,10 @@ def serverRamLoad(server, timestamp):
 def getUserAvgRAM(userID):
 	cursor = db.cursor()
 	try: 
-		avgRAM = cursor.execute("SELECT AVG_RAM FROM PREDICTION WHERE UID = %s", (userID, ))
+		cursor.execute("SELECT AVG_RAM FROM PREDICTION WHERE UID = %s", (userID, ))
+		avgRAM = 0
+		for row in cursor:
+			avgRAM = row[0]
 	except Exception, e:
 		print "getUserAvgRAM"
 		print repr(e)
@@ -87,19 +102,25 @@ def calculateCache(serverLoad, userLoad, cache):
 def getServerCPU(server):
 	cursor = db.cursor()
 	try:
-		serverCPU, timestamp = cursor.execute("SELECT CPU, TIMESTAMP FROM sSAMPLE WHERE NAME = %s ORDER BY TIMESTAMP DESC", (server, ))
+		serverCPU, timestamp = 0, 0
+		cursor.execute("SELECT CPU, TIMESTAMP FROM sSAMPLE WHERE NAME = %s ORDER BY TIMESTAMP DESC", (server, ))
+		for row in cursor:
+			serverCPU, timestamp = row
 	except Exception, e:
 		print "getServerCPU"
 		print repr(e)
 	
 	cursor.close()
 
-	lastHour = timestamp - datetime.timedelta(hours - 1)
+	lastHour = timestamp - datetime.timedelta(hours=1)
 
 	# Get the predicted load on the server from the users currently active 
 	cursor = db.cursor()
 	try:
-		userCPU = cursor.excute("SELECT AVG_CPU FROM PREDICTION WHERE LAST_USED_SERVER = %s AND LAST_LOGIN > %s", (server, lastHour))
+		userCPU = []
+		cursor.execute("SELECT AVG_CPU FROM PREDICTION WHERE LAST_USED_SERVER = %s AND LAST_LOGIN > %s", (server, lastHour))
+		for row in cursor:
+			userCPU.append(row[0])
 	except Exception, e:
 		print "getServerCPU 2"
 		print repr(e)
@@ -116,7 +137,7 @@ def getServerCPU(server):
 def getUserCPU(userID):
 	cursor = db.cursor()
 	try:
-		cursor.execute("SELECT AVG_CPU FROM PREDICIONT WHERE UID = %s", userID)
+		cursor.execute("SELECT AVG_CPU FROM PREDICTION WHERE UID = %s", (userID, ))
 	except Exception, e:
 		print "getUserCPU"
 		print repr(e)
@@ -131,7 +152,10 @@ def getUserCPU(userID):
 def leastLoadServer():
 	cursor = db.cursor()
 	try:
-		serverList = cursor.execute("SELECT NAME FROM SERVER")
+		serverList = []
+		cursor.execute("SELECT NAME FROM SERVER")
+		for row in cursor:
+			serverList.append(row[0])
 	except Exception, e:
 		print "leastLoadServer"
 		print repr(e)
@@ -165,16 +189,15 @@ def leastLoadServer():
 
 if __name__ == '__main__':
 	userID = sys.argv[1]
-	print userID
 	userExists = existingUser(userID)
 
 	# If the server is already in the prediction table we want to check if RAM cache is available
 	if userExists:
-		lastServer, lastLogin = lastUsedServer()
+		lastServer, lastLogin = lastUsedServer(userID)
 		loadSinceLast, cachedRAM = serverRAMLoad(lastServer, lastLogin)
 
 		# Get the avg RAM usage for the user from the prediction table
-		avgRAMUsage = getUSerAvgRAM(userID)
+		avgRAMUsage = getUserAvgRAM(userID)
 		# See if cache is still available
 		cacheAvailable = calculateCache(loadSinceLast, avgRAMUsage, cachedRAM)
 

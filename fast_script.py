@@ -155,7 +155,7 @@ def averageTotalCPU(avgCPU):
 def averageTotalTime(runTime):
 	return sum(runTime) / len(runTime)
 
-def timeConverter(sec):
+def timeConverter(sec): 
 	m, s = divmod(sec, 60)
 	h, m = divmod(m, 60)
 	return h, m, s
@@ -218,7 +218,6 @@ if __name__ == '__main__':
 	data = getJobData(userID)
 
 	results = []
-	print data[1]
 	for k, g in groupby(data, key=lambda i: keyfunc(i[1])):
 		n =  sum(1 for x in g)
 		avg_level = sum([x[0] for x in g]) / n
