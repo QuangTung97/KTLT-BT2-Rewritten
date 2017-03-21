@@ -210,7 +210,7 @@ def keyfunc(timestamp, interval = 60):
 	normalize_second = (delta_second / interval) * interval
 	return xt + datetime.timedelta(seconds=normalize_second)
 
-logging.basicConfig(level=logging.DEBUG, filename='/home/tung/ktlt/dataPoints.log')
+logging.basicConfig(level=logging.DEBUG, filename='dataPoints.log')
 if __name__ == '__main__':
 	d = {}
 	userName = 'tung'
@@ -223,6 +223,3 @@ if __name__ == '__main__':
 		avg_level = sum([x[0] for x in g]) / n
 		results.append((k, avg_level))
 	print results
-
-	# generateGraphs(userID, (userName, ))
-

@@ -77,7 +77,7 @@ def updateServer():
 	db.commit()
 
 
-logging.basicConfig(level=logging.DEBUG, filename="/home/tung/ktlt/server.log")
+logging.basicConfig(level=logging.DEBUG, filename="server.log")
 
 if __name__ == '__main__':
 	while(True):

@@ -319,7 +319,7 @@ def addSample(pid, real, timestamp, CPU, RAM, rss, vms, ReadIO, WriteIO):
 		print "INSERT INTO jSAMPLE ERROR!"
 
 
-logging.basicConfig(level=logging.DEBUG, filename='/home/tung/ktlt/process.log')
+logging.basicConfig(level=logging.DEBUG, filename='process.log')
 if __name__ == '__main__':
 	while(True):
 		try:
