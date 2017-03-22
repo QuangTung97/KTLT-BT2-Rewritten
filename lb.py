@@ -166,11 +166,15 @@ def leastLoadServer():
 
 	serverDict = {}
 	for server in serverList:
-		activeServerLoad, timestamp = 0, 0
+		activeServerLoad = 0
+		timestamp = 0
 		cursor.execute("SELECT CPU, TIMESTAMP FROM sSAMPLE WHERE NAME = %s ORDER BY TIMESTAMP DESC", (server, ))
 		for item in cursor:
 			activeServerLoad, timestamp = item
+			break
 
+		if timestamp == 0:
+			continue
 		lastHour = timestamp - datetime.timedelta(hours=1)
 
 		userLoad = []

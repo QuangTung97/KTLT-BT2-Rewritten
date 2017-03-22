@@ -59,7 +59,7 @@ def processList2():
 			real, effective, saved = proc.uids()
 		except psutil.NoSuchProcess:
 			pass
-		if real >= 1000:
+		if real >= 0:
 			processList.append(proc)
 	return processList
 
@@ -169,6 +169,9 @@ def calculateResources(processDict):
 			WriteIO = procWriteIO + childWriteIO
 
 			# Add the user, job and sample to database if not exists
+			if real < 2000:
+				continue
+
 			addUser(real, username)
 			addJob(pid, real, timestamp, name, cmd)
 			addSample(pid, real, timestamp, sumCPU, sumRAM, rss, vms, ReadIO, WriteIO)
