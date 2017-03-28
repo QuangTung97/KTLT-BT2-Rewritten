@@ -6,7 +6,7 @@ import logging
 # Connect to database
 try:
 	global db
-	db = MySQLdb.connect(host="10.0.2.15", user="lb",  \
+	db = MySQLdb.connect(host="10.0.2.2", user="lb",  \
 			passwd="lb", \
 			db="MONITOR")
 except Exception, e:
