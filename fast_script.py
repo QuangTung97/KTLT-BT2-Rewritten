@@ -1,5 +1,5 @@
 from __future__ import division
-import os, datetime, psutil, time, subprocess
+import os, datetime, psutil, time, subprocess, sys
 import socket
 import MySQLdb, MySQLdb.cursors
 import logging
@@ -15,7 +15,7 @@ from itertools import groupby
 
 # Connect to database
 try:
-	db = MySQLdb.connect(host="localhost", user="ktlt", passwd="taquangtung", db="MONITOR") #, cursorclass=MySQLdb.cursors.SSCursor)
+	db = MySQLdb.connect(host="localhost", user="lb", passwd="lb", db="MONITOR")
 except Exception, e:
 	print "Can't connect to database"
 
@@ -137,19 +137,19 @@ def averageJobCPU(jobData):
 			cpuTotal.append(missingCPU)
 			if row[0] > maxCPU:
 				maxCPU = round(row[0], 3)
-		try:
-			mySum = sum(cpuTotal) / timeDiff
-		except Exception, e:
-			pass
-		
-		if mySum == None or mySum == 0:
-			return 0, timeDiff, maxCPU
-		else:
-			return mySum, timeDiff, maxCPU
+	try:
+		mySum = sum(cpuTotal) / timeDiff
+	except Exception, e:
+		pass
+	
+	if mySum == None or mySum == 0:
+		return 0, timeDiff, maxCPU
+	else:
+		return mySum, timeDiff, maxCPU
 
 
 def averageTotalCPU(avgCPU):
-	return round(sum(agvCPU) / len(avgCPU), 2)
+	return round(sum(avgCPU) / len(avgCPU), 2)
 
 
 def averageTotalTime(runTime):
@@ -161,7 +161,7 @@ def timeConverter(sec):
 	return h, m, s
 
 def generateGraphs(userID, user):
-	userName = user[0]
+	userName = user
 	jobNames = []
 	data = getJobs(userID)
 	for item in data:
@@ -201,7 +201,7 @@ def generateGraphs(userID, user):
 
 	if not os.path.exists(directory):
 		os.makedirs(directory)
-		plt.savefig(directory + item + '.png')
+	plt.savefig(directory + item + '.png')
 
 def keyfunc(timestamp, interval = 60):
 	xt = datetime.datetime(2017, 3, 18)
@@ -213,8 +213,9 @@ def keyfunc(timestamp, interval = 60):
 logging.basicConfig(level=logging.DEBUG, filename='dataPoints.log')
 if __name__ == '__main__':
 	d = {}
-	userName = 'tung'
+	userName = sys.argv[1]
 	userID = getUserID(userName)
+	print "User ID: ", userID
 	data = getJobData(userID)
 
 	results = []
@@ -222,4 +223,4 @@ if __name__ == '__main__':
 		n =  sum(1 for x in g)
 		avg_level = sum([x[0] for x in g]) / n
 		results.append((k, avg_level))
-	print results
+	generateGraphs(userID, userName)

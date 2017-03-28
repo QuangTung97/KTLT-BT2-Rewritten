@@ -1,8 +1,0 @@
-
-ERROR:root:Error: 
-Traceback (most recent call last):
-  File "process_monitor.py", line 332, in <module>
-    completeDict = getCompleteDict(myDict, processList)
-  File "process_monitor.py", line 136, in getCompleteDict
-    print 'Fail: ', info
-NameError: global name 'info' is not defined
