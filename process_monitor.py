@@ -7,7 +7,7 @@ import logging
 
 if __name__ == '__main__':
     try:
-        db = MySQLdb.connect(host="localhost", user="lb",
+        db = MySQLdb.connect(host="10.0.2.2", user="lb",
                              passwd="lb", db="MONITOR")
     except Exception as e:
         print("Can't connect to DB")
