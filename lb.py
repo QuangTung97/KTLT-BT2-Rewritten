@@ -26,41 +26,20 @@ def leastLoadServer(server_repo, ssample_repo, pred_repo):
     print(min(server_dict, key=server_dict.get))
 
 
-def cacheAvailable(disk_diff, user_avg_ram, cache):
-    cache_not_replace = cache - disk_diff
-    if cache_not_replace > user_avg_ram:
-        return True
-    else:
-        return False
-
-
-if __name__ == '__main__':
-    # connect to database
-    try:
-        db = MySQLdb.connect(host="localhost", user="lb",
-                             passwd="lb", db="MONITOR")
-    except Exception as e:
-        print("Can't connect to database")
-
-    server_repo = ServerRepository(db)
-    pred_repo = PredictionRepository(db)
-    ssample_repo = sSampleRepository(db)
-
-    uid = int(sys.argv[1])
-
-    # Load Balancing Algorithm
+def loadBalance(uid, server_repo, ssample_repo, pred_repo):
     if pred_repo.exist(uid):
         # Prediction Record of UID
         pred = pred_repo.get(uid)
+        last_hour = pred.last_login - datetime.timedelta(hours=1)
         min_disk_in, max_disk_in                                        \
             = ssample_repo.getMinAndMaxDiskInLaterThan(
                         pred.last_used_server,
-                        pred.last_login)
+                        last_hour)
 
         disk_difference = max_disk_in - min_disk_in
         ram_cached = ssample_repo.getRamCachedWithDiskInGequal(
                             pred.last_used_server,
-                            max_disk_in)  # ?????
+                            max_disk_in)
 
         # See if cache is still available
         cache_available = cacheAvailable(
@@ -91,3 +70,28 @@ if __name__ == '__main__':
             leastLoadServer(server_repo, ssample_repo, pred_repo)
     else:
         leastLoadServer(server_repo, ssample_repo, pred_repo)
+
+
+def cacheAvailable(disk_diff, user_avg_ram, cache):
+    cache_not_replace = cache - disk_diff
+    if cache_not_replace > user_avg_ram:
+        return True
+    else:
+        return False
+
+
+if __name__ == '__main__':
+    # connect to database
+    try:
+        db = MySQLdb.connect(host="localhost", user="lb",
+                             passwd="lb", db="MONITOR")
+    except Exception as e:
+        print("Can't connect to database")
+
+    server_repo = ServerRepository(db)
+    pred_repo = PredictionRepository(db)
+    ssample_repo = sSampleRepository(db)
+
+    uid = int(sys.argv[1])
+
+    loadBalance(uid, server_repo, ssample_repo, pred_repo)

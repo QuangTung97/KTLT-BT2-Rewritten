@@ -47,10 +47,13 @@ def predictUserLoad(user, jsample_repo, pred_repo):
         # new calculated data
         pred.last_used_server = user.last_used_server
         pred.last_login = stat.run_time
-        pred.avg_cpu = new_avg_cpu
-        pred.max_cpu = new_max_cpu
-        pred.avg_ram = new_avg_ram
-        pred.max_ram = new_max_ram
+        pred.avg_cpu = round(new_avg_cpu, 3)
+        pred.max_cpu = round(new_max_cpu, 3)
+        pred.avg_ram = round(new_avg_ram, 3)
+        pred.max_ram = round(new_max_ram, 3)
+
+        # update data
+        pred_repo.update(pred)
 
         # Clean up the user monitor table
         jsample_repo.deleteUidsEarlierThan(user.uid, stat.run_time)

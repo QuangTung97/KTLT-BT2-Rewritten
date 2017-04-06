@@ -467,6 +467,7 @@ class sSampleRepository:
             print(e)
         return cpu, timestamp
 
+
 ##############################
 #      Control Prediction    #
 ##############################

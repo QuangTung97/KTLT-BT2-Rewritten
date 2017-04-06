@@ -40,5 +40,4 @@ if __name__ == '__main__':
                 jsampleRepo.add(jSample(proc))
         except:
             logging.exception("Error: ")
-        print("Loop")
         time.sleep(10)
