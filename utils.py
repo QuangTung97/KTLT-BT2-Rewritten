@@ -13,7 +13,6 @@ def bytesToMegabytes(n):
 ##############################
 class Process:
     def __init__(self, process):
-        self.pid = process.pid
         # basic information of process
         self.pid = process.pid
         self.ppid = process.ppid()
@@ -44,10 +43,11 @@ class Process:
             = process.memory_info()
         self.cpu = process.cpu_percent()
         self.ram = process.memory_percent()
-        self.rss = rss
-        self.vms = vms
-        self.read_io = rIO
-        self.write_io = wIO
+
+        self.rss = bytesToMegabytes(rss)
+        self.vms = bytesToMegabytes(vms)
+        self.read_io = bytesToMegabytes(rIO)
+        self.write_io = bytesToMegabytes(wIO)
 
     # Total resource of its and its descendants
     def calculateTotalResources(self):
@@ -72,8 +72,6 @@ class Process:
         self.total_cpu = self.total_cpu / psutil.cpu_count()
         self.total_cpu = round(self.total_cpu, 3)
         self.total_ram = round(self.total_ram, 3)
-        self.total_rss = bytesToMegabytes(self.rss)
-        self.total_vms = bytesToMegabytes(self.vms)
 
     # recursive buiding
     def __buildDescendantList(self, childs):
@@ -573,4 +571,3 @@ class PredictionRepository:
             print("PredictionRepository: getListAvgCPUFromServerLaterThan()")
             print(e)
         return sum(avgs_cpu)
-
