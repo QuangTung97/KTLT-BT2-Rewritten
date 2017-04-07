@@ -3,8 +3,8 @@ import time
 import MySQLdb
 
 
-def changeAlgorithm(new_avg, prev_avg, difference):
-    return new_avg
+def changeAlgorithm(new_avg, prev_avg):
+    return (new_avg + prev_avg) / 2
 
 
 def predictUserLoad(user, jsample_repo, pred_repo):
@@ -17,17 +17,8 @@ def predictUserLoad(user, jsample_repo, pred_repo):
         # As previous system statistic
         pred = pred_repo.get(user.uid)
 
-        # We want to adjust the value of average CPU for the user
-        # in the prediction table by using an algorithm that can
-        # adjust the value based on the difference
-        difference = stat.avg_cpu - pred.avg_cpu
-        new_avg_cpu = changeAlgorithm(stat.avg_cpu, pred.avg_cpu,
-                                      difference)
-
-        # Similiar with RAM
-        difference = stat.avg_ram - pred.avg_ram
-        new_avg_ram = changeAlgorithm(stat.avg_ram, pred.avg_ram,
-                                      difference)
+        new_avg_cpu = changeAlgorithm(stat.avg_cpu, pred.avg_cpu)
+        new_avg_ram = changeAlgorithm(stat.avg_ram, pred.avg_ram)
 
         # We check if the user have heavier CPU jobs
         # running in the system

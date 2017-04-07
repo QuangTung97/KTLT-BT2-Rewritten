@@ -10,22 +10,22 @@ def BytesToMB(bytes):
 # Black box testing
 class TestPsutil(unittest.TestCase):
     def test_cpu_count(self):
-        assert(psutil.cpu_count() == 4)
+        self.assertEqual(psutil.cpu_count(), 4)
 
     def test_cpu_percent(self):
         percent = psutil.cpu_percent()
-        assert(percent >= 0 and percent <= 400)
+        self.assertTrue(percent >= 0 and percent <= 400)
 
     def test_virtual_memory(self):
         total, available, percent, used, free, active, inactive,            \
             buff, cache, shared = psutil.virtual_memory()
 
-        assert(percent >= 0 and percent <= 100)
+        self.assertTrue(percent >= 0 and percent <= 100)
         available = BytesToMB(available)
         cache = BytesToMB(cache)
-        assert(cache >= 100 and cache < 2048)
-        assert(available >= 128)
-        assert(available <= 4096)
+        self.assertTrue(cache >= 100 and cache < 2048)
+        self.assertTrue(available >= 128)
+        self.assertTrue(available <= 4096)
 
     def test_disk_io_counters(self):
         read_count, write_count, read_bytes, write_bytes,                   \
@@ -34,35 +34,35 @@ class TestPsutil(unittest.TestCase):
             = psutil.disk_io_counters()
         disk_in = BytesToMB(read_bytes)
         disk_out = BytesToMB(write_bytes)
-        assert(disk_in < 10 * 1024)
-        assert(disk_in > 128)
-        assert(disk_out < 10 * 1024)
-        assert(disk_out > 128)
+        self.assertTrue(disk_in < 10 * 1024)
+        self.assertTrue(disk_in > 128)
+        self.assertTrue(disk_out < 10 * 1024)
+        self.assertTrue(disk_out > 128)
 
     def test_process_iter_and_uids(self):
         count = 0
         for proc in psutil.process_iter():
             count += 1
             real, effective, saved = proc.uids()
-            assert(real >= 0 and real <= 0xffff)
-            assert(effective >= 0 and effective <= 0xffff)
-            assert(saved >= 0 and saved <= 0xffff)
-        assert(count > 0)
+            self.assertTrue(real >= 0 and real <= 0xffff)
+            self.assertTrue(effective >= 0 and effective <= 0xffff)
+            self.assertTrue(saved >= 0 and saved <= 0xffff)
+        self.assertTrue(count > 0)
 
     def test_psutil_process_functions(self):
         for proc in psutil.process_iter():
             real, effective, saved = proc.uids()
             if real < 1000:
                 continue
-            assert(proc.pid <= 0xffff)
-            assert(proc.ppid() >= 0 and proc.ppid() <= 0xffff)
-            assert(isinstance(proc.name(), str))
-            assert(isinstance(proc.username(), str))
+            self.assertTrue(proc.pid <= 0xffff)
+            self.assertTrue(proc.ppid() >= 0 and proc.ppid() <= 0xffff)
+            self.assertIsInstance(proc.name(), str)
+            self.assertIsInstance(proc.username(), str)
             timestamp = datetime.datetime                   \
                 .fromtimestamp(proc.create_time())          \
                 .strftime("%Y-%m-%d %H:%M:%S")
-            assert(isinstance(timestamp, str))
-            assert(isinstance(proc.cmdline(), list))
+            self.assertIsInstance(timestamp, str)
+            self.assertIsInstance(proc.cmdline(), list)
 
             rIO, wIO, rB, wB, read_chars, write_chars       \
                 = proc.io_counters()
@@ -76,12 +76,12 @@ class TestPsutil(unittest.TestCase):
             rIO = BytesToMB(rIO)
             wIO = BytesToMB(wIO)
 
-            assert(rss <= 1024)
-            assert(vms <= 1024)
-            assert(cpu >= 0 and cpu <= 100)
-            assert(ram >= 0 and ram <= 100)
-            assert(rIO < 1024)
-            assert(wIO < 1024)
+            self.assertTrue(rss <= 1024)
+            self.assertTrue(vms <= 1024)
+            self.assertTrue(cpu >= 0 and cpu <= 100)
+            self.assertTrue(ram >= 0 and ram <= 100)
+            self.assertTrue(rIO < 1024)
+            self.assertTrue(wIO < 1024)
             break
 
 
