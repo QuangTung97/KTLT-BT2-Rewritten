@@ -1,7 +1,7 @@
 from prediction import predictUserLoad
 from utils import *
 import unittest
-from mock import MagicMock
+from mock import Mock
 
 
 class TestPredictionMethod(unittest.TestCase):
@@ -14,7 +14,7 @@ class TestPredictionMethod(unittest.TestCase):
             avg_ram=20.0, max_ram=25.4,
             run_time="2017-4-8 11:25:00"
         )
-        self.jsample_repo.statistic = MagicMock(
+        self.jsample_repo.statistic = Mock(
             return_value=self.stat
         )
 
@@ -24,7 +24,7 @@ class TestPredictionMethod(unittest.TestCase):
         self.user = User(1000, "user1", "server1")
 
     def test_predictUserLoad_UserExist(self):
-        self.pred_repo.exist = MagicMock(
+        self.pred_repo.exist = Mock(
             return_value=True
         )
 
@@ -37,11 +37,11 @@ class TestPredictionMethod(unittest.TestCase):
         )
         pred = Prediction(newuser, newstat)
 
-        self.pred_repo.get = MagicMock(
+        self.pred_repo.get = Mock(
             return_value=pred
         )
-        self.pred_repo.update = MagicMock()
-        self.jsample_repo.deleteUidsEarlierThan = MagicMock()
+        self.pred_repo.update = Mock()
+        self.jsample_repo.deleteUidsEarlierThan = Mock()
 
         predictUserLoad(self.user, self.jsample_repo,
                         self.pred_repo)
@@ -56,10 +56,10 @@ class TestPredictionMethod(unittest.TestCase):
         self.assertEqual(pred.last_login, "2017-4-8 11:25:00")
 
     def test_predictUserLoad_UserNotExist(self):
-        self.pred_repo.exist = MagicMock(
+        self.pred_repo.exist = Mock(
             return_value=False
         )
-        self.pred_repo.add = MagicMock()
+        self.pred_repo.add = Mock()
 
         predictUserLoad(self.user, self.jsample_repo,
                         self.pred_repo)
