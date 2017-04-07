@@ -35,9 +35,9 @@ class TestPsutil(unittest.TestCase):
         disk_in = BytesToMB(read_bytes)
         disk_out = BytesToMB(write_bytes)
         self.assertTrue(disk_in < 10 * 1024)
-        self.assertTrue(disk_in > 128)
+        self.assertTrue(disk_in >= 16)
         self.assertTrue(disk_out < 10 * 1024)
-        self.assertTrue(disk_out > 128)
+        self.assertTrue(disk_out >= 16)
 
     def test_process_iter_and_uids(self):
         count = 0
