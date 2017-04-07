@@ -303,10 +303,10 @@ class jSample:
 
 class jSampleStatistic:
     def __init__(self, avg_cpu, max_cpu, avg_ram, max_ram, run_time):
-        self.avg_cpu = avg_cpu
-        self.max_cpu = max_cpu
-        self.avg_ram = avg_ram
-        self.max_ram = max_ram
+        self.avg_cpu = round(avg_cpu, 3)
+        self.max_cpu = round(max_cpu, 3)
+        self.avg_ram = round(avg_ram, 3)
+        self.max_ram = round(max_ram, 3)
         self.run_time = run_time
 
 
@@ -361,12 +361,14 @@ class jSampleRepository:
 ##############################
 class sSample:
     def __init__(self, name, cpu, ram,
-                 ram_available, ram_cached, disk_in, disk_out):
+                 ram_available, ram_cached, ram_total,
+                 disk_in, disk_out):
         self.name = name
         self.cpu = cpu
         self.ram = ram
         self.ram_available = ram_available
         self.ram_cached = ram_cached
+        self.ram_total = ram_total
         self.disk_in = disk_in
         self.disk_out = disk_out
 
@@ -383,6 +385,7 @@ class ServerService:
         ram = round(percent, 3)
         ram_available = bytesToMegabytes(available)
         ram_cached = bytesToMegabytes(cache)
+        ram_total = bytesToMegabytes(total)
 
         # IO usage
         read_count, write_count, read_bytes, write_bytes,                   \
@@ -394,7 +397,7 @@ class ServerService:
 
         hostname = socket.gethostname()
         return sSample(hostname, cpu, ram, ram_available,
-                       ram_cached, disk_in, disk_out)
+                       ram_cached, ram_total, disk_in, disk_out)
 
 
 class sSampleRepository:
@@ -405,11 +408,12 @@ class sSampleRepository:
         cursor = self.db.cursor()
         try:
             cursor.execute("INSERT INTO sSAMPLE(NAME, CPU, RAM, "
-                           "RAM_AVAILABLE, RAM_CACHED, DISK_IN, "
-                           "DISK_OUT) VALUES"
-                           "(%s, %s, %s, %s, %s, %s, %s)",
+                           "RAM_AVAILABLE, RAM_CACHED, RAM_TOTAL, "
+                           "DISK_IN, DISK_OUT) VALUES"
+                           "(%s, %s, %s, %s, %s, %s, %s, %s)",
                            (ssample.name, ssample.cpu, ssample.ram,
-                            ssample.ram_available, ssample.ram_cached,
+                            ssample.ram_available,
+                            ssample.ram_cached, ssample.ram_total,
                             ssample.disk_in, ssample.disk_out))
             self.db.commit()
             cursor.close()
@@ -463,7 +467,19 @@ class sSampleRepository:
         except Exception as e:
             print("sSampleRepository: getLatestServerCPUAndTime()")
             print(e)
-        return cpu, timestamp
+        return float(cpu), timestamp
+
+    def getServerTotalRam(self, server_name):
+        cursor = self.db.cursor()
+        try:
+            cursor.execute("SELECT RAM_TOTAL FROM sSAMPLE "
+                           "WHERE NAME = %s", (server_name, ))
+            for row in cursor:
+                return row[0]
+        except Exception as e:
+            print("sSampleRepository: getServerTotalRam()")
+            print(e)
+        return None
 
 
 ##############################
@@ -570,4 +586,4 @@ class PredictionRepository:
         except Exception as e:
             print("PredictionRepository: getListAvgCPUFromServerLaterThan()")
             print(e)
-        return sum(avgs_cpu)
+        return float(sum(avgs_cpu))
