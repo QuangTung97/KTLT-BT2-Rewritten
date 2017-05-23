@@ -75,7 +75,7 @@ def loadBalance(uid, server_repo, ssample_repo, pred_repo):
     if total_cpu < 100:
         return pred.last_used_server
     else:
-        leastLoadServer(server_repo, ssample_repo, pred_repo)
+        return leastLoadServer(server_repo, ssample_repo, pred_repo)
 
 
 def cacheAvailable(disk_diff, user_avg_ram_in_MB, cache):
