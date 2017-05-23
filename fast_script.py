@@ -1,12 +1,6 @@
-from __future__ import division
-import os, datetime, psutil, time, subprocess, sys
-import socket
+import os, datetime, sys
 import MySQLdb, MySQLdb.cursors
 import logging
-import pprint
-import math
-from decimal import *
-import csv
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -16,8 +10,8 @@ from itertools import groupby
 # Connect to database
 try:
 	db = MySQLdb.connect(host="localhost", user="lb", passwd="lb", db="MONITOR")
-except Exception, e:
-	print "Can't connect to database"
+except Exception as e:
+	print("Can't connect to database")
 
 userID = 'tung'
 
@@ -26,10 +20,10 @@ def getAllUsers():
 	data = []
 	try:
 		cursor.execute("SELECT NAME FROM USER")
-	except Exception, e:
-		print "getAllUsers"
-		print repr(e)
-	
+	except Exception as e:
+		print("getAllUsers")
+		print(repr(e))
+
 	for row in cursor:
 		data.append(row)
 	cursor.close()
@@ -40,10 +34,10 @@ def getUserID(userID):
 	cursor = db.cursor()
 	try:
 		UID = cursor.execute("SELECT UID FROM USER WHERE NAME = %s", (userID, ))
-	except Exception, e:
-		print "getUserID"
-		print repr(e)
-	
+	except Exception as e:
+		print("getUserID")
+		print(repr(e))
+
 	row = cursor.fetchone()
 	cursor.close()
 	return row[0]
@@ -53,9 +47,9 @@ def getJobs(UID):
 	data = []
 	try:
 		cursor.execute("SELECT PID, START_TIME, CMD_NAME FROM JOB WHERE UID = %s", (UID, ))
-	except Exception, e:
-		print "getJobs"
-		print repr(e)
+	except Exception as e:
+		print("getJobs")
+		print(repr(e))
 	for row in cursor:
 		data.append(row)
 	cursor.close()
@@ -66,9 +60,9 @@ def getJobData(uid):
 	data = []
 	try:
 		cursor.execute("SELECT CPU, RUN_TIME FROM jSAMPLE WHERE UID = %s", (uid, ))
-	except Exception, e:
-		print "getJobData"
-		print repr(e)
+	except Exception as e:
+		print("getJobData")
+		print(repr(e))
 	for row in cursor:
 		data.append(row)
 	cursor.close()
@@ -78,17 +72,17 @@ def getJobData(uid):
 def getServer(UID):
 	try:
 		server = db.query("SELECT SERVER FROM USER WHERE UID = %s", (UID,))
-	except Exception, e:
-		print "getServer: ", repr(e)
-	
+	except Exception as e:
+		print("getServer: ", repr(e))
+
 	return server
 
 def getServerData(server):
 	try:
 		db.query("SELECT * FROM sSAMPLE WHERE NAME = %s", server)
 		server_data = db.store_result()
-	except Exception, e:
-		print "getServerData: ", repr(e)
+	except Exception as e:
+		print("getServerData: ", repr(e))
 	return server_data
 
 def topFive(data):
@@ -139,9 +133,9 @@ def averageJobCPU(jobData):
 				maxCPU = round(row[0], 3)
 	try:
 		mySum = sum(cpuTotal) / timeDiff
-	except Exception, e:
+	except Exception as e:
 		pass
-	
+
 	if mySum == None or mySum == 0:
 		return 0, timeDiff, maxCPU
 	else:
@@ -155,7 +149,7 @@ def averageTotalCPU(avgCPU):
 def averageTotalTime(runTime):
 	return sum(runTime) / len(runTime)
 
-def timeConverter(sec): 
+def timeConverter(sec):
 	m, s = divmod(sec, 60)
 	h, m = divmod(m, 60)
 	return h, m, s
@@ -184,24 +178,26 @@ def generateGraphs(userID, user):
 				if len(jobData) > length:
 					length = len(jobData)
 				itemData.append(rowData)
-	x = [sum(e) / len(e) for e in zip(*itemData)]
-	y = []
-	count = 0
-	while count < len(x):
-		y.append(count)
-		count += 1
-	plt.plot(x)
-	plt.axis([0, len(x), 0, 100])
-	plt.xlabel("Time in Seconds")
-	plt.ylabel('% CPU')
-	plt.title(userName + ' - ' + item + ' AvgCPU: ' + str(averageTotalCPU(avgCPU)))
-	plt.grid(True)
 
-	directory = 'figure/'
+        # Modify tab
+        x = [sum(e) / len(e) for e in zip(*itemData)]
+        y = []
+        count = 0
+        while count < len(x):
+            y.append(count)
+            count += 1
+        plt.plot(x)
+        plt.axis([0, len(x), 0, 100])
+        plt.xlabel("Time in Seconds")
+        plt.ylabel('% CPU')
+        plt.title(userName + ' - ' + item + ' AvgCPU: ' + str(averageTotalCPU(avgCPU)))
+        plt.grid(True)
 
-	if not os.path.exists(directory):
-		os.makedirs(directory)
-	plt.savefig(directory + item + '.png')
+        directory = 'figure/'
+
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        plt.savefig(directory + item + '.png')
 
 def keyfunc(timestamp, interval = 60):
 	xt = datetime.datetime(2017, 3, 18)
